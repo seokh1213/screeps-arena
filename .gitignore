@@ -1,0 +1,8 @@
+.idea/
+*.iml
+.gradle/
+.kotlin/
+out/
+build/
+
+arena/upload
