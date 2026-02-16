@@ -27,7 +27,8 @@ tasks.register<Sync>("deploy") {
     group = "screeps"
     dependsOn("jsProductionExecutableCompileSync")
 
-    val uploadDir = layout.projectDirectory.dir("../arena/upload")
+    val arenaUploadPath = providers.gradleProperty("arenaUploadDir").orElse("arena/upload")
+    val uploadDir = rootProject.layout.projectDirectory.dir(arenaUploadPath.get())
 
     from(layout.buildDirectory.dir("compileSync/js/main/productionExecutable/kotlin"))
     include("**/*.mjs")
@@ -35,4 +36,15 @@ tasks.register<Sync>("deploy") {
     rename("screeps-arena-starter-bot-app.mjs", "main.mjs")
     rename("screeps-arena-starter-bot-app.mjs.map", "main.mjs.map")
     into(uploadDir)
+}
+
+tasks.register<Delete>("cleanArenaUpload") {
+    description = "Deletes arena upload output."
+    group = "screeps"
+    val arenaUploadPath = providers.gradleProperty("arenaUploadDir").orElse("arena/upload")
+    delete(rootProject.layout.projectDirectory.dir(arenaUploadPath.get()))
+}
+
+tasks.named("clean") {
+    dependsOn("cleanArenaUpload")
 }
