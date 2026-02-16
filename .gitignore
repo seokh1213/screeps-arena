@@ -5,4 +5,23 @@
 out/
 build/
 
+# OS / Editor noise
+.DS_Store
+**/.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Gradle / Kotlin local state
+.gradletasknamecache
+.kotlin/daemon/
+.kotlin/errors/
+
+# Kotlin/JS and package manager local caches
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 arena/upload
