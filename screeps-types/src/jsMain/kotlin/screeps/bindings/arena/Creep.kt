@@ -1,13 +1,14 @@
 @file:JsModule("game/prototypes/creep")
 @file:JsNonModule
+
 package screeps.bindings.arena
 
-import screeps.bindings.*
-import screeps.bindings.arena.GameObject
+import screeps.bindings.BodyPartConstant
+import screeps.bindings.DirectionConstant
+import screeps.bindings.ResourceConstant
+import screeps.bindings.ScreepsReturnCode
 import screeps.bindings.arena.game.FindPathOptions
 import screeps.bindings.arena.game.Store
-import screeps.bindings.arena.Structure
-import screeps.bindings.arena.ConstructionSite
 
 abstract external class Creep : GameObject {
     val body: Array<BodyPart>
