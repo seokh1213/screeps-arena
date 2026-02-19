@@ -1,8 +1,7 @@
 @file:JsModule("game/prototypes/wall")
 @file:JsNonModule
-package screeps.bindings.arena
 
-import screeps.bindings.arena.Structure
+package screeps.bindings.arena
 
 abstract external class StructureWall : Structure
 

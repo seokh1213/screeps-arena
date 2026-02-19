@@ -1,6 +1,5 @@
 package screeps.bindings.arena
 
-import screeps.bindings.*
 import screeps.bindings.arena.game.FindPathOptions
 
 external interface GameObject : HasPosition {

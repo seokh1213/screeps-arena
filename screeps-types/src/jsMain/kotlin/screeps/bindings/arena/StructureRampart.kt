@@ -1,8 +1,7 @@
 @file:JsModule("game/prototypes/rampart")
 @file:JsNonModule
-package screeps.bindings.arena
 
-import screeps.bindings.arena.OwnedStructure
+package screeps.bindings.arena
 
 abstract external class StructureRampart : OwnedStructure
 

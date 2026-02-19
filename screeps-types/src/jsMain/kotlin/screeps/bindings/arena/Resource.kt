@@ -1,9 +1,7 @@
 @file:JsModule("game/prototypes/resource")
 @file:JsNonModule
-package screeps.bindings.arena
 
-import screeps.bindings.ResourceConstant
-import screeps.bindings.arena.GameObject
+package screeps.bindings.arena
 
 abstract external class Resource : GameObject {
     val amount: Int
