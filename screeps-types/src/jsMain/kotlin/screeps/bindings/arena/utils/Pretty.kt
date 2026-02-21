@@ -1,7 +1,11 @@
 package screeps.bindings.arena.utils
 
 import screeps.bindings.RESOURCE_ENERGY
-import screeps.bindings.arena.*
+import screeps.bindings.arena.BodyPart
+import screeps.bindings.arena.Creep
+import screeps.bindings.arena.SpawnCreepResult
+import screeps.bindings.arena.Spawning
+import screeps.bindings.arena.StructureSpawn
 import screeps.bindings.arena.game.Store
 import screeps.bindings.getCapacity
 import screeps.bindings.getFreeCapacity

@@ -1,4 +1,4 @@
-package bot.arena.tutorial.strategy
+package bot.arena.mode.tutorial.strategy
 
 import bot.arena.memory.CreepMemory
 import bot.arena.memory.CreepRoles

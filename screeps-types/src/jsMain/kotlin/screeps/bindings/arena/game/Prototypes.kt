@@ -3,8 +3,19 @@
 
 package screeps.bindings.arena.game
 
-import screeps.bindings.arena.*
-import screeps.bindings.arena.game.Prototype
+import screeps.bindings.arena.ConstructionSite
+import screeps.bindings.arena.Creep
+import screeps.bindings.arena.GameObject
+import screeps.bindings.arena.Resource
+import screeps.bindings.arena.Source
+import screeps.bindings.arena.Structure
+import screeps.bindings.arena.StructureContainer
+import screeps.bindings.arena.StructureExtension
+import screeps.bindings.arena.StructureRampart
+import screeps.bindings.arena.StructureRoad
+import screeps.bindings.arena.StructureSpawn
+import screeps.bindings.arena.StructureTower
+import screeps.bindings.arena.StructureWall
 
 @JsName("Creep")
 external object PrototypeCreep : Prototype<Creep>

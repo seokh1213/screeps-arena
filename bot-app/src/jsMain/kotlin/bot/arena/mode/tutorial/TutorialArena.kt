@@ -1,16 +1,17 @@
-package bot.arena.tutorial
+package bot.arena.mode.tutorial
 
+import bot.arena.mode.Arena
+import bot.arena.mode.tutorial.strategy.AttackerBehaviorStrategy
+import bot.arena.mode.tutorial.strategy.AttackerSpawnStrategy
+import bot.arena.mode.tutorial.strategy.NaiveWorkerBehaviorStrategy
+import bot.arena.mode.tutorial.strategy.NaiveWorkerSpawnStrategy
 import bot.arena.strategy.ParallelStrategy
 import bot.arena.strategy.SequentialStrategy
-import bot.arena.tutorial.strategy.AttackerBehaviorStrategy
-import bot.arena.tutorial.strategy.AttackerSpawnStrategy
-import bot.arena.tutorial.strategy.NaiveWorkerBehaviorStrategy
-import bot.arena.tutorial.strategy.NaiveWorkerSpawnStrategy
 import screeps.bindings.arena.StructureSpawn
 import screeps.bindings.arena.game.PrototypeStructureSpawn
 import screeps.bindings.arena.game.getObjectsByPrototype
 
-class TutorialArena {
+class TutorialArena : Arena {
 
     private val mySpawn: StructureSpawn by lazy {
         getObjectsByPrototype(PrototypeStructureSpawn)
@@ -41,7 +42,7 @@ class TutorialArena {
         AttackerBehaviorStrategy(mySpawn = mySpawn),
     )
 
-    fun loop() {
+    override fun loop() {
         spawnStrategies.tick()
         behaviorStrategies.tick()
     }
