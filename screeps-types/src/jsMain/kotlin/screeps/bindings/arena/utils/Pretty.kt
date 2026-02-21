@@ -60,8 +60,7 @@ fun Store.pretty(): String = buildString {
 }
 
 fun Any?.jsonString(): String? = try {
-    val obj = this // js의 this랑 겹쳐 오류 발생. 명시적으로 obj 선언
-    js("JSON").stringify(obj, null, 2).unsafeCast<String?>()
+    js("JSON").stringify(this, null, 2).unsafeCast<String?>()
 } catch (_: Throwable) {
     null
 }

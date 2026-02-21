@@ -1,28 +1,48 @@
 package bot.arena.tutorial
 
+import bot.arena.strategy.ParallelStrategy
+import bot.arena.strategy.SequentialStrategy
+import bot.arena.tutorial.strategy.AttackerBehaviorStrategy
+import bot.arena.tutorial.strategy.AttackerSpawnStrategy
+import bot.arena.tutorial.strategy.NaiveWorkerBehaviorStrategy
+import bot.arena.tutorial.strategy.NaiveWorkerSpawnStrategy
+import screeps.bindings.arena.StructureSpawn
+import screeps.bindings.arena.game.PrototypeStructureSpawn
+import screeps.bindings.arena.game.getObjectsByPrototype
+
 class TutorialArena {
 
-    fun loop() {
-        /**
-         * 상황:
-         * - spawn 1개 (최초 에너지 500, 틱당 1 증가)
-         * - 에너지 소스 1000 1개
-         * - 적 개체 3개 좌상단. (healer(move, heal), melee(move, attack), ranger(move, rangedAttack))
-         *
-         * body part 당 3틱
-         *   • TOUGH: 10 에너지
-         *   • MOVE: 50 에너지
-         *   • CARRY: 50 에너지
-         *   • ATTACK: 80 에너지
-         *   • WORK: 100 에너지
-         *   • RANGED_ATTACK: 150 에너지
-         *   • HEAL: 250 에너지
-         *
-         * 전략:
-         * - 빠른 드론 만들어서 캐서 이동하게 한다. 최대 3명이 캘 수 있는듯? (<--- 추후 비싼 일꾼으로 바꿔야함)
-         * -
-         */
-
+    private val mySpawn: StructureSpawn by lazy {
+        getObjectsByPrototype(PrototypeStructureSpawn)
+            .find { it.my == true }
+            ?: throw IllegalStateException("Cannot find a my spawn of an arena!")
     }
 
+    /**
+     * 소환 파이프라인 (순서대로 실행, 각 전략이 isDone되면 다음으로):
+     * 1. Worker 3마리
+     * 2. Attacker 2마리
+     * 3. Worker 2마리 추가
+     */
+    private val spawnStrategies = SequentialStrategy(
+        NaiveWorkerSpawnStrategy(mySpawn = mySpawn, maxWorkers = 3),
+        AttackerSpawnStrategy(mySpawn = mySpawn, maxAttackers = 2),
+        NaiveWorkerSpawnStrategy(mySpawn = mySpawn, maxWorkers = 4),
+        AttackerSpawnStrategy(mySpawn = mySpawn, maxAttackers = 5),
+    )
+
+    /**
+     * 행동 전략 (모두 무한 실행, 매 틱 동시에 동작):
+     * - Worker: source 수집 → spawn 전달
+     * - Attacker: 적 creep/spawn 공격
+     */
+    private val behaviorStrategies = ParallelStrategy(
+        NaiveWorkerBehaviorStrategy(mySpawn = mySpawn),
+        AttackerBehaviorStrategy(mySpawn = mySpawn),
+    )
+
+    fun loop() {
+        spawnStrategies.tick()
+        behaviorStrategies.tick()
+    }
 }
