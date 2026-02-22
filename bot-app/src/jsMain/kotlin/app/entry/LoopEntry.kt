@@ -1,18 +1,17 @@
 package app.entry
 
 import bot.arena.mode.Arena
-import bot.arena.mode.tutorial.TutorialArena
+import bot.arena.mode.capturetheflag.CaptureTheFlagArena
 import screeps.bindings.arena.game.ArenaInfo
-import screeps.bindings.arena.utils.installPrettyToStringOverrides
+import screeps.bindings.arena.utils.pretty
 
 private object Init {
     init {
-        println("Arena: " + ArenaInfo.name)
-        installPrettyToStringOverrides()
+        println("Arena: ${ArenaInfo.pretty()}")
     }
 }
 
-val arena: Arena = TutorialArena()
+val arena: Arena = CaptureTheFlagArena()
 
 /**
  * Main loop

@@ -6,6 +6,7 @@ import screeps.bindings.arena.Creep
 import screeps.bindings.arena.SpawnCreepResult
 import screeps.bindings.arena.Spawning
 import screeps.bindings.arena.StructureSpawn
+import screeps.bindings.arena.game.ArenaInfo
 import screeps.bindings.arena.game.Store
 import screeps.bindings.getCapacity
 import screeps.bindings.getFreeCapacity
@@ -60,6 +61,17 @@ fun Store.pretty(): String = buildString {
     appendLine("  capacity(energy) = ${getCapacity(RESOURCE_ENERGY)}")
     appendLine("  used(energy) = ${getUsedCapacity(RESOURCE_ENERGY)}")
     appendLine("  free(energy) = ${getFreeCapacity(RESOURCE_ENERGY)}")
+    append("}")
+}
+
+fun ArenaInfo.pretty(): String = buildString {
+    appendLine("ArenaInfo {")
+    appendLine("  name = $name")
+    appendLine("  level = $level")
+    appendLine("  season = $season")
+    appendLine("  ticksLimit = $ticksLimit")
+    appendLine("  cpuTimeLimit = $cpuTimeLimit")
+    appendLine("  cpuTimeLimitFirstTick = $cpuTimeLimitFirstTick")
     append("}")
 }
 

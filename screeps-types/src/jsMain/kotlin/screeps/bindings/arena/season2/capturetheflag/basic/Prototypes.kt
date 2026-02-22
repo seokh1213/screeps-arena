@@ -5,6 +5,7 @@ package screeps.bindings.arena.season2.capturetheflag.basic
 
 import screeps.bindings.BodyPartConstant
 import screeps.bindings.arena.GameObject
+import screeps.bindings.arena.game.Prototype
 
 typealias BodyPartType = BodyPartConstant
 
@@ -15,3 +16,6 @@ abstract external class BodyPart : GameObject {
     /** The type of the body part */
     val type: BodyPartType
 }
+
+@JsName("BodyPart")
+external object PrototypeBodyPart : Prototype<BodyPart>
