@@ -1,16 +1,18 @@
 package bot.arena.mode.tutorial
 
 import bot.arena.mode.Arena
+import bot.arena.common.memory.CreepMemory
 import bot.arena.mode.tutorial.strategy.AttackerBehaviorStrategy
 import bot.arena.mode.tutorial.strategy.AttackerSpawnStrategy
 import bot.arena.mode.tutorial.strategy.NaiveWorkerBehaviorStrategy
 import bot.arena.mode.tutorial.strategy.NaiveWorkerSpawnStrategy
-import bot.arena.strategy.ParallelStrategy
-import bot.arena.strategy.SequentialStrategy
+import bot.arena.mode.tutorial.strategy.ParallelStrategy
+import bot.arena.mode.tutorial.strategy.SequentialStrategy
 import screeps.bindings.arena.StructureSpawn
 import screeps.bindings.arena.game.getObjectsByPrototype
 
 class TutorialArena : Arena {
+    private val creepMemory = CreepMemory<String>()
 
     private val mySpawn: StructureSpawn by lazy {
         getObjectsByPrototype(StructureSpawn)
@@ -25,10 +27,10 @@ class TutorialArena : Arena {
      * 3. Worker 2마리 추가
      */
     private val spawnStrategies = SequentialStrategy(
-        NaiveWorkerSpawnStrategy(mySpawn = mySpawn, maxWorkers = 3),
-        AttackerSpawnStrategy(mySpawn = mySpawn, maxAttackers = 2),
-        NaiveWorkerSpawnStrategy(mySpawn = mySpawn, maxWorkers = 4),
-        AttackerSpawnStrategy(mySpawn = mySpawn, maxAttackers = 5),
+        NaiveWorkerSpawnStrategy(mySpawn = mySpawn, maxWorkers = 3, creepMemory = creepMemory),
+        AttackerSpawnStrategy(mySpawn = mySpawn, maxAttackers = 2, creepMemory = creepMemory),
+        NaiveWorkerSpawnStrategy(mySpawn = mySpawn, maxWorkers = 4, creepMemory = creepMemory),
+        AttackerSpawnStrategy(mySpawn = mySpawn, maxAttackers = 5, creepMemory = creepMemory),
     )
 
     /**
@@ -37,8 +39,8 @@ class TutorialArena : Arena {
      * - Attacker: 적 creep/spawn 공격
      */
     private val behaviorStrategies = ParallelStrategy(
-        NaiveWorkerBehaviorStrategy(mySpawn = mySpawn),
-        AttackerBehaviorStrategy(mySpawn = mySpawn),
+        NaiveWorkerBehaviorStrategy(mySpawn = mySpawn, creepMemory = creepMemory),
+        AttackerBehaviorStrategy(mySpawn = mySpawn, creepMemory = creepMemory),
     )
 
     override fun loop() {

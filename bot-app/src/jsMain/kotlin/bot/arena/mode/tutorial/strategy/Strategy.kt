@@ -1,4 +1,4 @@
-package bot.arena.strategy
+package bot.arena.mode.tutorial.strategy
 
 /**
  * 게임 전략의 기본 인터페이스.
@@ -37,7 +37,9 @@ abstract class SpawnStrategy : Strategy {
         if (!isDone) spawn()
     }
 
-    fun reset() { initialized = false }
+    fun reset() {
+        initialized = false
+    }
 }
 
 /**
@@ -61,5 +63,7 @@ abstract class BehaviorStrategy : Strategy {
         if (!isDone) behave()
     }
 
-    fun reset() { initialized = false }
+    fun reset() {
+        initialized = false
+    }
 }

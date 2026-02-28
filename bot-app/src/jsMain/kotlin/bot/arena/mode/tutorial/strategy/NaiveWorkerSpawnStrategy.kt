@@ -1,7 +1,6 @@
 package bot.arena.mode.tutorial.strategy
 
-import bot.arena.memory.CreepRoles
-import bot.arena.strategy.RoleSpawnStrategy
+import bot.arena.common.memory.CreepMemory
 import screeps.bindings.BodyPartConstant
 import screeps.bindings.CARRY
 import screeps.bindings.MOVE
@@ -15,7 +14,8 @@ import screeps.bindings.arena.StructureSpawn
 class NaiveWorkerSpawnStrategy(
     mySpawn: StructureSpawn,
     maxWorkers: Int = 3,
-) : RoleSpawnStrategy(mySpawn, maxWorkers, CreepRoles.WORKER) {
+    creepMemory: CreepMemory<String>,
+) : RoleSpawnStrategy(mySpawn, maxWorkers, CreepRoles.WORKER, creepMemory) {
 
     override val bodyParts: Array<out BodyPartConstant> = arrayOf(MOVE, CARRY, WORK)
 }

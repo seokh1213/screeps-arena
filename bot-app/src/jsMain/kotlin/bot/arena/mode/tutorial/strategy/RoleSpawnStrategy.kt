@@ -1,10 +1,12 @@
-package bot.arena.strategy
+package bot.arena.mode.tutorial.strategy
 
-import bot.arena.memory.CreepMemory
-import bot.arena.plan.bodyCost
+import bot.arena.common.memory.CreepMemory
+import bot.arena.common.plan.bodyCost
 import screeps.bindings.BodyPartConstant
 import screeps.bindings.RESOURCE_ENERGY
+import screeps.bindings.arena.Creep
 import screeps.bindings.arena.StructureSpawn
+import screeps.bindings.arena.game.getObjectsByPrototype
 import screeps.bindings.getUsedCapacity
 
 /**
@@ -17,7 +19,7 @@ import screeps.bindings.getUsedCapacity
  *
  * ```kotlin
  * class WorkerSpawnStrategy(spawn: StructureSpawn, max: Int)
- *     : RoleSpawnStrategy(spawn, max, CreepMemory.Role.WORKER) {
+ *     : RoleSpawnStrategy(spawn, max, CreepRoles.WORKER, creepMemory) {
  *     override val bodyParts = arrayOf(MOVE, CARRY, WORK)
  * }
  * ```
@@ -26,6 +28,7 @@ abstract class RoleSpawnStrategy(
     protected val mySpawn: StructureSpawn,
     private val maxCount: Int,
     private val role: String,
+    private val creepMemory: CreepMemory<String>,
 ) : SpawnStrategy() {
 
     abstract val bodyParts: Array<out BodyPartConstant>
@@ -33,7 +36,15 @@ abstract class RoleSpawnStrategy(
     private val spawnCost by lazy { bodyCost(bodyParts) }
 
     override val isDone: Boolean
-        get() = CreepMemory.countAlive(role) >= maxCount
+        get() = countAlive() >= maxCount
+
+    private fun countAlive(): Int {
+        val aliveCreeps = getObjectsByPrototype(Creep)
+            .filter { it.my && it.exists }
+
+        creepMemory.retainAll(aliveCreeps)
+        return creepMemory.count(role)
+    }
 
     // 이 전략이 직접 시작한 spawn인지 추적.
     // 다른 전략이 spawn 중일 때 creep을 잘못 태깅하는 오염을 방지한다.
@@ -43,7 +54,7 @@ abstract class RoleSpawnStrategy(
         val spawning = mySpawn.spawning
         if (spawning != null) {
             // 내가 시작한 spawn이면 태깅 (소환 완료까지 매 틱 덮어씀)
-            if (isOurSpawn) CreepMemory.set(spawning.creep, role)
+            if (isOurSpawn) creepMemory.set(spawning.creep, role)
             return
         }
         // 소환이 끝났으면 플래그 초기화

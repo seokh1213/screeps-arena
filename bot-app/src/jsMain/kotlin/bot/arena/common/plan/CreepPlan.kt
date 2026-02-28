@@ -1,4 +1,4 @@
-package bot.arena.plan
+package bot.arena.common.plan
 
 import screeps.bindings.BODYPART_COST
 import screeps.bindings.BodyPartConstant

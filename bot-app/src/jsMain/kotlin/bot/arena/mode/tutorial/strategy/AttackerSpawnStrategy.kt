@@ -1,7 +1,6 @@
 package bot.arena.mode.tutorial.strategy
 
-import bot.arena.memory.CreepRoles
-import bot.arena.strategy.RoleSpawnStrategy
+import bot.arena.common.memory.CreepMemory
 import screeps.bindings.BodyPartConstant
 import screeps.bindings.MOVE
 import screeps.bindings.RANGED_ATTACK
@@ -15,7 +14,8 @@ import screeps.bindings.arena.StructureSpawn
 class AttackerSpawnStrategy(
     mySpawn: StructureSpawn,
     maxAttackers: Int,
-) : RoleSpawnStrategy(mySpawn, maxAttackers, CreepRoles.ATTACKER) {
+    creepMemory: CreepMemory<String>,
+) : RoleSpawnStrategy(mySpawn, maxAttackers, CreepRoles.ATTACKER, creepMemory) {
 
     override val bodyParts: Array<out BodyPartConstant> = arrayOf(TOUGH, TOUGH, TOUGH, RANGED_ATTACK, MOVE, MOVE)
 }

@@ -1,4 +1,4 @@
-package bot.arena.strategy
+package bot.arena.mode.tutorial.strategy
 
 /**
  * 여러 전략을 동시에(같은 틱에) 실행하는 Composite Strategy.

@@ -1,4 +1,4 @@
-package bot.arena.strategy
+package bot.arena.mode.tutorial.strategy
 
 /**
  * 전략들을 순서대로 실행하는 Composite Strategy.

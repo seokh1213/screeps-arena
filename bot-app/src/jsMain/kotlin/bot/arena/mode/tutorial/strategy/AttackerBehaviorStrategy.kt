@@ -1,13 +1,11 @@
 package bot.arena.mode.tutorial.strategy
 
-import bot.arena.memory.CreepMemory
-import bot.arena.memory.CreepRoles
-import bot.arena.strategy.BehaviorStrategy
+import bot.arena.common.memory.CreepMemory
+import kotlin.math.abs
 import screeps.bindings.arena.Creep
 import screeps.bindings.arena.HasPosition
 import screeps.bindings.arena.StructureSpawn
 import screeps.bindings.arena.game.getObjectsByPrototype
-import kotlin.math.abs
 
 /**
  * ATTACKER role을 가진 creep들의 수비 전략.
@@ -19,12 +17,13 @@ import kotlin.math.abs
  */
 class AttackerBehaviorStrategy(
     private val mySpawn: StructureSpawn,
+    private val creepMemory: CreepMemory<String>,
     private val guardRange: Int = 5,
 ) : BehaviorStrategy() {
 
     override fun behave() {
         val myAttackers = getObjectsByPrototype(Creep)
-            .filter { it.my && !it.spawning && CreepMemory.get(it) == CreepRoles.ATTACKER }
+            .filter { it.my && !it.spawning && creepMemory.get(it) == CreepRoles.ATTACKER }
 
         if (myAttackers.isEmpty()) return
 

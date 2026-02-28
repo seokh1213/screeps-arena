@@ -1,4 +1,4 @@
-package bot.arena.strategy
+package bot.arena.mode.tutorial.strategy
 
 /**
  * 조건(context)에 따라 실행할 전략을 동적으로 선택하는 Composite Strategy.
