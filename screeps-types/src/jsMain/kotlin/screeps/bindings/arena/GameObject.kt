@@ -1,6 +1,10 @@
+@file:JsModule("game/prototypes")
+@file:JsNonModule
+
 package screeps.bindings.arena
 
 import screeps.bindings.arena.game.FindPathOptions
+import screeps.bindings.arena.game.Prototype
 
 external interface GameObject : HasPosition {
 
@@ -29,6 +33,7 @@ external interface GameObject : HasPosition {
 
     fun getRangeTo(pos: HasPosition): Int
 
+    companion object : Prototype<GameObject>
 }
 
 external interface Effect {

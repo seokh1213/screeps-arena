@@ -8,13 +8,12 @@ import bot.arena.mode.tutorial.strategy.NaiveWorkerSpawnStrategy
 import bot.arena.strategy.ParallelStrategy
 import bot.arena.strategy.SequentialStrategy
 import screeps.bindings.arena.StructureSpawn
-import screeps.bindings.arena.game.PrototypeStructureSpawn
 import screeps.bindings.arena.game.getObjectsByPrototype
 
 class TutorialArena : Arena {
 
     private val mySpawn: StructureSpawn by lazy {
-        getObjectsByPrototype(PrototypeStructureSpawn)
+        getObjectsByPrototype(StructureSpawn)
             .find { it.my == true }
             ?: throw IllegalStateException("Cannot find a my spawn of an arena!")
     }

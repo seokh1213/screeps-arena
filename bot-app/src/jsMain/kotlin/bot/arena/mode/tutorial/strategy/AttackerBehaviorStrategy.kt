@@ -6,7 +6,6 @@ import bot.arena.strategy.BehaviorStrategy
 import screeps.bindings.arena.Creep
 import screeps.bindings.arena.HasPosition
 import screeps.bindings.arena.StructureSpawn
-import screeps.bindings.arena.game.PrototypeCreep
 import screeps.bindings.arena.game.getObjectsByPrototype
 import kotlin.math.abs
 
@@ -24,12 +23,12 @@ class AttackerBehaviorStrategy(
 ) : BehaviorStrategy() {
 
     override fun behave() {
-        val myAttackers = getObjectsByPrototype(PrototypeCreep)
+        val myAttackers = getObjectsByPrototype(Creep)
             .filter { it.my && !it.spawning && CreepMemory.get(it) == CreepRoles.ATTACKER }
 
         if (myAttackers.isEmpty()) return
 
-        val enemyCreeps = getObjectsByPrototype(PrototypeCreep).filter { !it.my }
+        val enemyCreeps = getObjectsByPrototype(Creep).filter { !it.my }
 
         myAttackers.forEach { attacker ->
             defend(attacker, enemyCreeps)

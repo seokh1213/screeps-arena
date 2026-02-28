@@ -3,5 +3,8 @@
 
 package screeps.bindings.arena
 
-abstract external class StructureWall : Structure
+import screeps.bindings.arena.game.Prototype
 
+abstract external class StructureWall : Structure {
+    companion object : Prototype<StructureWall>
+}

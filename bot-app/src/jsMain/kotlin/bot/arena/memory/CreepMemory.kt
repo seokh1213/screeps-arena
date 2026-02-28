@@ -1,7 +1,6 @@
 package bot.arena.memory
 
 import screeps.bindings.arena.Creep
-import screeps.bindings.arena.game.PrototypeCreep
 import screeps.bindings.arena.game.getObjectsByPrototype
 
 /**
@@ -26,7 +25,7 @@ object CreepMemory {
      * 죽은 creep(exists=false)의 데이터는 자동으로 정리된다.
      */
     fun countAlive(role: String): Int {
-        val aliveIds = getObjectsByPrototype(PrototypeCreep)
+        val aliveIds = getObjectsByPrototype(Creep)
             .filter { it.my && it.exists }
             .map { it.id.toString() }
             .toSet()

@@ -15,7 +15,6 @@ typealias BodyPartType = BodyPartConstant
 abstract external class BodyPart : GameObject {
     /** The type of the body part */
     val type: BodyPartType
-}
 
-@JsName("BodyPart")
-external object PrototypeBodyPart : Prototype<BodyPart>
+    companion object : Prototype<BodyPart>
+}

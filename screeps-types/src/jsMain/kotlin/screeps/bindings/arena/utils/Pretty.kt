@@ -3,6 +3,7 @@ package screeps.bindings.arena.utils
 import screeps.bindings.RESOURCE_ENERGY
 import screeps.bindings.arena.BodyPart
 import screeps.bindings.arena.Creep
+import screeps.bindings.arena.Flag
 import screeps.bindings.arena.SpawnCreepResult
 import screeps.bindings.arena.Spawning
 import screeps.bindings.arena.StructureSpawn
@@ -72,6 +73,14 @@ fun ArenaInfo.pretty(): String = buildString {
     appendLine("  ticksLimit = $ticksLimit")
     appendLine("  cpuTimeLimit = $cpuTimeLimit")
     appendLine("  cpuTimeLimitFirstTick = $cpuTimeLimitFirstTick")
+    append("}")
+}
+
+fun Flag.pretty(): String = buildString {
+    appendLine("Flag {")
+    appendLine("  id = $id")
+    appendLine("  position = ($x, $y)")
+    appendLine("  my = $my")
     append("}")
 }
 

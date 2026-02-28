@@ -8,6 +8,7 @@ import screeps.bindings.DirectionConstant
 import screeps.bindings.ResourceConstant
 import screeps.bindings.ScreepsReturnCode
 import screeps.bindings.arena.game.FindPathOptions
+import screeps.bindings.arena.game.Prototype
 import screeps.bindings.arena.game.Store
 
 abstract external class Creep : GameObject {
@@ -37,6 +38,8 @@ abstract external class Creep : GameObject {
     fun transfer(target: Structure, resource: ResourceConstant, amount: Int = definedExternally): ScreepsReturnCode
     fun transfer(target: Creep, resource: ResourceConstant, amount: Int = definedExternally): ScreepsReturnCode
     fun withdraw(target: Structure, resource: ResourceConstant, amount: Int = definedExternally): ScreepsReturnCode
+
+    companion object : Prototype<Creep>
 }
 
 external interface BodyPart {

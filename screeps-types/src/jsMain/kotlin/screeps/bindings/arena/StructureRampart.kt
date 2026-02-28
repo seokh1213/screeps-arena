@@ -3,5 +3,8 @@
 
 package screeps.bindings.arena
 
-abstract external class StructureRampart : OwnedStructure
+import screeps.bindings.arena.game.Prototype
 
+abstract external class StructureRampart : OwnedStructure {
+    companion object : Prototype<StructureRampart>
+}

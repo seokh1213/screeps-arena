@@ -6,6 +6,7 @@ package screeps.bindings.arena
 import screeps.bindings.BodyPartConstant
 import screeps.bindings.DirectionConstant
 import screeps.bindings.ScreepsReturnCode
+import screeps.bindings.arena.game.Prototype
 import screeps.bindings.arena.game.Store
 
 abstract external class StructureSpawn : OwnedStructure {
@@ -15,6 +16,8 @@ abstract external class StructureSpawn : OwnedStructure {
 
     fun setDirections(directions: Array<DirectionConstant>): ScreepsReturnCode
     fun spawnCreep(body: Array<out BodyPartConstant>): SpawnCreepResult
+
+    companion object : Prototype<StructureSpawn>
 }
 
 external interface SpawnCreepResult {
@@ -27,4 +30,6 @@ abstract external class Spawning {
     val remainingTime: Int
     val creep: Creep
     fun cancel(): ScreepsReturnCode?
+
+    companion object : Prototype<Spawning>
 }

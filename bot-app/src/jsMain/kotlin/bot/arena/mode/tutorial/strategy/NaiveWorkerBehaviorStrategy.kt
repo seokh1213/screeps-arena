@@ -8,8 +8,6 @@ import screeps.bindings.arena.Creep
 import screeps.bindings.arena.HasPosition
 import screeps.bindings.arena.Source
 import screeps.bindings.arena.StructureSpawn
-import screeps.bindings.arena.game.PrototypeCreep
-import screeps.bindings.arena.game.PrototypeSource
 import screeps.bindings.arena.game.getObjectsByPrototype
 import kotlin.math.abs
 
@@ -28,9 +26,9 @@ class NaiveWorkerBehaviorStrategy(
     private val workerRoles = mutableMapOf<String, WorkerRole>()
 
     override fun behave() {
-        val myWorkers = getObjectsByPrototype(PrototypeCreep)
+        val myWorkers = getObjectsByPrototype(Creep)
             .filter { it.my && !it.spawning && CreepMemory.get(it) == CreepRoles.WORKER }
-        val sources = getObjectsByPrototype(PrototypeSource)
+        val sources = getObjectsByPrototype(Source)
 
         myWorkers.forEach { creep ->
             val role = workerRoles.getOrPut(creep.id.toString()) { WorkerRole.HARVESTING }

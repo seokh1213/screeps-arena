@@ -1,9 +1,9 @@
 @file:JsModule("game/prototypes/construction-site")
 @file:JsNonModule
+
 package screeps.bindings.arena
 
-import screeps.bindings.arena.GameObject
-import screeps.bindings.arena.Structure
+import screeps.bindings.arena.game.Prototype
 
 abstract external class ConstructionSite : GameObject {
     val progress: Int?
@@ -11,5 +11,6 @@ abstract external class ConstructionSite : GameObject {
     val structure: Structure?
     val my: Boolean?
     fun remove()
-}
 
+    companion object : Prototype<ConstructionSite>
+}
