@@ -1,5 +1,14 @@
 package bot.arena.mode.capturetheflag
 
+import bot.arena.mode.capturetheflag.ai.core.Blackboard
+import bot.arena.mode.capturetheflag.ai.core.GroupStore
+import bot.arena.mode.capturetheflag.ai.core.RolePolicyRegistry
+import bot.arena.mode.capturetheflag.ai.core.WorldModel
+import bot.arena.mode.capturetheflag.ai.pipeline.GroupCoordinator
+import bot.arena.mode.capturetheflag.ai.pipeline.SquadExecutor
+import bot.arena.mode.capturetheflag.ai.pipeline.StrategyDirector
+import bot.arena.mode.capturetheflag.ai.pipeline.TowerExecutor
+import bot.arena.mode.capturetheflag.ai.presets.CaptureTheFlagDirectors
 import bot.arena.mode.capturetheflag.memory.Memory
 import bot.arena.mode.capturetheflag.model.Context
 import bot.arena.mode.capturetheflag.model.CreepContext
@@ -18,6 +27,27 @@ import screeps.bindings.arena.season2.capturetheflag.basic.BodyPart
 class Overmind {
     private val memory = Memory()
 
+    // 공유 상태(Director/Coordinator/Executor 공통)
+    private val blackboard = Blackboard()
+    private val groups = GroupStore()
+
+    // 파이프라인 3요소
+    private val coordinator = GroupCoordinator(groups)
+    private val executor = SquadExecutor(
+        policies = RolePolicyRegistry.default(),
+        roleOf = ::roleOf,
+    )
+    private val towerExecutor = TowerExecutor()
+
+    // Director는 Utility/Hierarchical Task Network 중 선택 가능
+    private val directorMode: DirectorMode = DirectorMode.UTILITY
+    private val director: StrategyDirector by lazy {
+        when (directorMode) {
+            DirectorMode.UTILITY -> CaptureTheFlagDirectors.utility(roleOf = ::roleOf)
+            DirectorMode.HIERARCHICAL_TASK_NETWORK -> CaptureTheFlagDirectors.hierarchicalTaskNetwork()
+        }
+    }
+
     init {
         updateMemory()
         assignCreepRole(memory.currentContext)
@@ -25,7 +55,24 @@ class Overmind {
 
     fun commandOrder(): List<Order<*>> {
         updateMemory()
-        return makeOrders()
+
+        // Perception
+        val world = WorldModel.sense()
+
+        // 역할 메모리 유지(사망 creep 제거)
+        memory.creepMemory.retainAll(world.myCreeps)
+        assignCreepRole(memory.currentContext)
+
+        // 1) Director: 전략 계획
+        val plan = director.tick(world, blackboard, groups)
+
+        // 2) Coordinator: 그룹 반영
+        val squads = coordinator.apply(plan, world, blackboard)
+
+        // 3) Executor: orders 생성
+        val creepOrders = executor.execute(squads, world, blackboard)
+        val towerOrders = towerExecutor.buildOrders(world)
+        return creepOrders + towerOrders
     }
 
     private fun updateMemory() {
@@ -50,8 +97,8 @@ class Overmind {
         return Phase.INITIAL
     }
 
-    private fun makeOrders(): List<Order<*>> {
-        return emptyList()
+    private fun roleOf(creep: Creep): Role {
+        return memory.creepMemory[creep]?.role ?: creep.determineRole()
     }
 
     private fun assignCreepRole(context: Context) {
@@ -79,5 +126,10 @@ class Overmind {
             bodyParts.contains(ATTACK) -> Role.MELEE
             else -> Role.CREEP
         }
+    }
+
+    private enum class DirectorMode {
+        UTILITY,
+        HIERARCHICAL_TASK_NETWORK,
     }
 }
