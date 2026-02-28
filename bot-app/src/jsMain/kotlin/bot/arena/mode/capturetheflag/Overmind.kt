@@ -18,9 +18,13 @@ import screeps.bindings.arena.season2.capturetheflag.basic.BodyPart
 class Overmind {
     private val memory = Memory()
 
-    fun commandOrder(): List<Order> {
+    init {
         updateMemory()
-        println("BeforeState: ${memory.beforeState}, CurrentState: ${memory.currentState}")
+        assignCreepRole(memory.currentContext)
+    }
+
+    fun commandOrder(): List<Order<*>> {
+        updateMemory()
         return makeOrders()
     }
 
@@ -29,11 +33,6 @@ class Overmind {
         val phase = evaluatePhase(context)
 
         memory.updateState(phase, context)
-
-        // 최초 한번만 role 지정
-        if (memory.beforePhase == Phase.START) {
-            assignCreepRole(memory.currentContext)
-        }
     }
 
     private fun getCurrentContext() = Context(
@@ -49,6 +48,10 @@ class Overmind {
         val (beforePhase, beforeContext) = memory.beforeState
 
         return Phase.INITIAL
+    }
+
+    private fun makeOrders(): List<Order<*>> {
+        return emptyList()
     }
 
     private fun assignCreepRole(context: Context) {
@@ -76,9 +79,5 @@ class Overmind {
             bodyParts.contains(ATTACK) -> Role.MELEE
             else -> Role.CREEP
         }
-    }
-
-    private fun makeOrders(): List<Order> {
-        return emptyList()
     }
 }

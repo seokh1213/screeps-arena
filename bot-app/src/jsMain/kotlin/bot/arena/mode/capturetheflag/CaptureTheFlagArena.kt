@@ -1,28 +1,21 @@
 package bot.arena.mode.capturetheflag
 
 import bot.arena.mode.Arena
-import screeps.bindings.arena.Creep
-import screeps.bindings.arena.Flag
-import screeps.bindings.arena.game.getObjectsByPrototype
+import bot.arena.mode.capturetheflag.model.Order
 
 class CaptureTheFlagArena : Arena {
     val overmind = Overmind()
 
     override fun loop() {
-        val (myCreeps, enemyCreps) = getObjectsByPrototype(Creep).partition { it.my }
-        val flags = getObjectsByPrototype(Flag)
-
         val orders = overmind.commandOrder()
+        performOrders(orders)
+    }
 
-//        myCreeps.forEach { myCreep ->
-//            val nearFlag = flags.filter { it.my != true }
-//                .minByOrNull { it.getRangeTo(myCreep) }
-//                ?: run {
-//                    println("[WARN] can't find any nearest flag.")
-//                    return@forEach
-//                }
-//
-//            myCreep.moveTo(nearFlag)
-//        }
+    private fun performOrders(orders: List<Order<*>>) {
+        println("Orders(${orders.size}) :" + orders.joinToString("\n"))
+
+        orders.forEach { order ->
+            order.perform()
+        }
     }
 }
