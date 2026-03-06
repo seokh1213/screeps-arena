@@ -3,18 +3,13 @@ package bot.arena.mode.capturetheflag.ai.htn
 import bot.arena.mode.capturetheflag.ai.core.Blackboard
 import bot.arena.mode.capturetheflag.ai.core.CapabilityRequest
 import bot.arena.mode.capturetheflag.ai.core.GroupOperation
-import bot.arena.mode.capturetheflag.ai.core.Pos
 import bot.arena.mode.capturetheflag.ai.core.Tactic
 import bot.arena.mode.capturetheflag.ai.core.TacticAssignment
 import bot.arena.mode.capturetheflag.ai.core.TacticContext
 import bot.arena.mode.capturetheflag.ai.core.WorldModel
+import bot.arena.mode.capturetheflag.ai.core.determineRole
 import bot.arena.mode.capturetheflag.model.Role
-import screeps.bindings.ATTACK
-import screeps.bindings.CARRY
-import screeps.bindings.HEAL
-import screeps.bindings.RANGED_ATTACK
 import screeps.bindings.arena.Creep
-import screeps.bindings.arena.Flag
 
 /**
  * Hierarchical Task Network에서 재사용 가능한 primitive task 모음(초안)
@@ -74,28 +69,5 @@ class AllocateSquadTask(
 
         val max = requirement.maxSize
         return if (max != null) picked.take(max) else picked
-    }
-}
-
-class SetRallyPosFromFlagTask(
-    private val squadId: String,
-    private val flagSelector: (WorldModel, Blackboard) -> Flag?,
-    override val name: String = "SetRallyPosFromFlag($squadId)",
-) : PrimitiveTask {
-    override fun apply(world: WorldModel, blackboard: Blackboard, out: PlanBuilder) {
-        val flag = flagSelector(world, blackboard) ?: return
-        // 매우 단순한 rally: 플래그에서 한 칸 아래
-        blackboard.setSquadValue(squadId, "rallyPos", Pos(flag.x.toInt(), flag.y.toInt() + 1))
-    }
-}
-
-private fun Creep.determineRole(): Role {
-    val bodyParts = body.map { it.type }
-    return when {
-        bodyParts.contains(CARRY) -> Role.WORKER
-        bodyParts.contains(HEAL) -> Role.HEALER
-        bodyParts.contains(RANGED_ATTACK) -> Role.RANGER
-        bodyParts.contains(ATTACK) -> Role.MELEE
-        else -> Role.CREEP
     }
 }

@@ -4,6 +4,8 @@ import bot.arena.mode.capturetheflag.model.Role
 import screeps.bindings.RESOURCE_ENERGY
 import screeps.bindings.arena.Creep
 import screeps.bindings.arena.Structure
+import screeps.bindings.arena.StructureContainer
+import screeps.bindings.arena.StructureTower
 import screeps.bindings.arena.game.getRange
 
 /**
@@ -34,109 +36,242 @@ class RolePolicyRegistry(
     }
 }
 
-private fun Creep.hpRatio(): Double = if (hitsMax == 0) 0.0 else hits.toDouble() / hitsMax.toDouble()
+private fun Creep.hitPointRatio(): Double = if (hitsMax == 0) 0.0 else hits.toDouble() / hitsMax.toDouble()
+
+private fun shouldRetreatForHealth(creep: Creep, intent: UnitIntent): Boolean {
+    val retreatThreshold = intent.constraints.retreatHpRatio ?: return false
+    return creep.hitPointRatio() <= retreatThreshold
+}
+
+private fun enforceTetherConstraint(creep: Creep, intent: UnitIntent, world: WorldModel): Action.Move? {
+    val maximumDistanceToTether = intent.constraints.maxDistanceToTether ?: return null
+    val tetherUnitId = intent.tetherToId ?: return null
+    val tetherCreep = world.getCreepById(tetherUnitId) ?: return null
+
+    if (getRange(creep, tetherCreep) > maximumDistanceToTether) {
+        return Action.Move(tetherCreep.toPosition())
+    }
+
+    return null
+}
+
+private fun chooseRetreatPosition(creep: Creep, intent: UnitIntent, world: WorldModel): Pos {
+    val nearestThreat = world.enemyCreeps.minByOrNull { getRange(creep, it) }
+    if (nearestThreat != null) {
+        val deltaX = creep.x - nearestThreat.x
+        val deltaY = creep.y - nearestThreat.y
+        val stepX = when {
+            deltaX > 0.0 -> 1
+            deltaX < 0.0 -> -1
+            else -> 0
+        }
+        val stepY = when {
+            deltaY > 0.0 -> 1
+            deltaY < 0.0 -> -1
+            else -> 0
+        }
+
+        if (stepX != 0 || stepY != 0) {
+            return Pos(creep.x.toInt() + stepX, creep.y.toInt() + stepY)
+        }
+    }
+
+    val tetherCreep = intent.tetherToId?.let(world::getCreepById)
+    if (tetherCreep != null) {
+        return tetherCreep.toPosition()
+    }
+
+    val nearestOwnedFlag = world.flags
+        .filter { it.my == true }
+        .minByOrNull { getRange(creep, it) }
+    if (nearestOwnedFlag != null) {
+        return nearestOwnedFlag.toPosition()
+    }
+
+    return intent.desiredPos ?: creep.toPosition()
+}
+
+private fun chooseClosestEnemy(creep: Creep, world: WorldModel): Creep? =
+    world.enemyCreeps.minByOrNull { getRange(creep, it) }
+
+private fun chooseLowestHealthEnemyInRange(creep: Creep, world: WorldModel, rangeLimit: Int): Creep? =
+    world.enemyCreeps
+        .filter { getRange(creep, it) <= rangeLimit }
+        .minByOrNull { it.hitPointRatio() }
+
+private fun moveToDesiredPosition(intent: UnitIntent): Action =
+    intent.desiredPos?.let { Action.Move(it) } ?: Action.None
+
+private fun Creep.toPosition(): Pos = Pos(x.toInt(), y.toInt())
+
+private fun screeps.bindings.arena.Flag.toPosition(): Pos = Pos(x.toInt(), y.toInt())
+
+private fun Structure.toPosition(): Pos = Pos(x.toInt(), y.toInt())
+
+private fun StructureTower.needsEnergy(): Boolean =
+    (store.getFreeCapacity(RESOURCE_ENERGY.toString()) ?: 0) > 0
+
+private fun StructureContainer.hasEnergy(): Boolean =
+    (store.getUsedCapacity(RESOURCE_ENERGY.toString()) ?: 0) > 0
 
 /**
- * 근거리: (1) 강제 점령 위치(mustOccupyPos)가 있으면 그곳을 최우선
- * (2) 인접 적이 있으면 공격
- * (3) 그 외는 desiredPos로 이동
+ * 근거리: 점령 유지 + 전열 유지 + 저체력/테더 제약
  */
 class MeleePolicy : RolePolicy {
     override val role: Role = Role.MELEE
 
     override fun decide(creep: Creep, intent: UnitIntent, world: WorldModel, blackboard: Blackboard): Action {
-        // retreat 규칙(공통)
-        val retreatHp = intent.constraints.retreatHpRatio
-        if (retreatHp != null && creep.hpRatio() <= retreatHp) {
-            intent.desiredPos?.let { return Action.Move(it) }
-            return Action.None
+        if (shouldRetreatForHealth(creep, intent) || intent.mode == UnitMode.Retreat) {
+            return Action.Move(chooseRetreatPosition(creep, intent, world))
         }
 
-        intent.constraints.mustOccupyPos?.let { occupy ->
-            if (getRange(creep, occupy.toHasPosition()) > 0) {
-                return Action.Move(occupy)
+        enforceTetherConstraint(creep, intent, world)?.let { return it }
+
+        intent.constraints.mustOccupyPos?.let { occupyPosition ->
+            if (getRange(creep, occupyPosition.toHasPosition()) > 0) {
+                return Action.Move(occupyPosition)
             }
         }
 
-        // 인접 공격
-        val adjacentEnemy = world.enemyCreeps.minByOrNull { getRange(creep, it) }?.takeIf { getRange(creep, it) <= 1 }
-        if (adjacentEnemy != null) return Action.Attack(adjacentEnemy.id.toString())
+        val adjacentEnemy = chooseLowestHealthEnemyInRange(creep, world, rangeLimit = 1)
+        if (adjacentEnemy != null) {
+            return Action.Attack(adjacentEnemy.id.toString())
+        }
 
-        // 이동
-        return intent.desiredPos?.let { Action.Move(it) } ?: Action.None
+        if (intent.mode == UnitMode.Hold && intent.desiredPos != null) {
+            if (getRange(creep, intent.desiredPos.toHasPosition()) > 1) {
+                return Action.Move(intent.desiredPos)
+            }
+            return Action.None
+        }
+
+        return moveToDesiredPosition(intent)
     }
 }
 
 /**
- * 레인저: (1) 사거리 3 내 적이 있으면 rangedAttack
- * (2) 카이팅 모드면 적과 거리 벌리기(간단 버전: desiredPos로 이동)
+ * 레인저: 최대 사거리 유지, 근접 위협 시 카이팅, 저체력 후퇴
  */
 class RangerPolicy : RolePolicy {
     override val role: Role = Role.RANGER
 
     override fun decide(creep: Creep, intent: UnitIntent, world: WorldModel, blackboard: Blackboard): Action {
-        val enemyInRange3 = world.enemyCreeps.minByOrNull { getRange(creep, it) }?.takeIf { getRange(creep, it) <= 3 }
-        if (enemyInRange3 != null) return Action.RangedAttack(enemyInRange3.id.toString())
-        return intent.desiredPos?.let { Action.Move(it) } ?: Action.None
+        if (shouldRetreatForHealth(creep, intent) || intent.mode == UnitMode.Retreat) {
+            return Action.Move(chooseRetreatPosition(creep, intent, world))
+        }
+
+        enforceTetherConstraint(creep, intent, world)?.let { return it }
+
+        val closestEnemy = chooseClosestEnemy(creep, world)
+        if (intent.mode == UnitMode.Kite && closestEnemy != null && getRange(creep, closestEnemy) <= 2) {
+            return Action.Move(chooseRetreatPosition(creep, intent, world))
+        }
+
+        val enemyInRange = chooseLowestHealthEnemyInRange(creep, world, rangeLimit = 3)
+        if (enemyInRange != null) {
+            return Action.RangedAttack(enemyInRange.id.toString())
+        }
+
+        if (intent.mode == UnitMode.Hold && intent.desiredPos != null) {
+            if (getRange(creep, intent.desiredPos.toHasPosition()) > 1) {
+                return Action.Move(intent.desiredPos)
+            }
+            return Action.None
+        }
+
+        return moveToDesiredPosition(intent)
     }
 }
 
 /**
- * 힐러: (1) 3칸 내 아군 중 가장 피가 낮은 대상 힐
- * (2) 없으면 desiredPos로 이동
+ * 힐러: 아군 치유를 유지하되 근접 위협 시 후퇴
  */
 class HealerPolicy : RolePolicy {
     override val role: Role = Role.HEALER
 
     override fun decide(creep: Creep, intent: UnitIntent, world: WorldModel, blackboard: Blackboard): Action {
-        val injured = world.myCreeps
-            .filter { it.hits < it.hitsMax }
-            .filter { getRange(creep, it) <= 3 }
-            .minByOrNull { it.hits.toDouble() / it.hitsMax.toDouble() }
-
-        if (injured != null) {
-            return if (getRange(creep, injured) <= 1) Action.Heal(injured.id.toString()) else Action.RangedHeal(injured.id.toString())
+        if (shouldRetreatForHealth(creep, intent) || intent.mode == UnitMode.Retreat) {
+            return Action.Move(chooseRetreatPosition(creep, intent, world))
         }
 
-        return intent.desiredPos?.let { Action.Move(it) } ?: Action.None
+        enforceTetherConstraint(creep, intent, world)?.let { return it }
+
+        val closestEnemy = chooseClosestEnemy(creep, world)
+        if (intent.mode == UnitMode.Kite && closestEnemy != null && getRange(creep, closestEnemy) <= 2) {
+            return Action.Move(chooseRetreatPosition(creep, intent, world))
+        }
+
+        val injuredAlly = world.myCreeps
+            .filter { it.hits < it.hitsMax }
+            .filter { getRange(creep, it) <= 3 }
+            .minByOrNull { it.hitPointRatio() }
+
+        if (injuredAlly != null) {
+            return if (getRange(creep, injuredAlly) <= 1) {
+                Action.Heal(injuredAlly.id.toString())
+            } else {
+                Action.RangedHeal(injuredAlly.id.toString())
+            }
+        }
+
+        return moveToDesiredPosition(intent)
     }
 }
 
 /**
- * 워커: draft 버전
- * - (1) 목표 타워가 있으면 에너지 넣기 (인접 시 transfer)
- * - (2) 에너지가 없으면 가까운 컨테이너에서 withdraw
- * - (3) 이동
+ * 워커: 타워 충전 전 에너지 확인, 부족하면 목표 타워 주변 컨테이너에서 보급
  */
 class WorkerPolicy : RolePolicy {
     override val role: Role = Role.WORKER
 
     override fun decide(creep: Creep, intent: UnitIntent, world: WorldModel, blackboard: Blackboard): Action {
-        val energy = creep.store.getUsedCapacity(RESOURCE_ENERGY.toString()) ?: 0
-        val targetTowerId = intent.focusTargetId
-        if (targetTowerId != null) {
-            if (energy <= 0) {
-                val nearestContainer = world.containers.minByOrNull { getRange(creep, it) }
-                if (nearestContainer != null) {
-                    return if (getRange(creep, nearestContainer) <= 1) {
-                        Action.Withdraw(nearestContainer.id.toString(), RESOURCE_ENERGY)
+        if (shouldRetreatForHealth(creep, intent) || intent.mode == UnitMode.Retreat) {
+            return Action.Move(chooseRetreatPosition(creep, intent, world))
+        }
+
+        val towerIdToSupport = intent.focusTargetId
+        if (towerIdToSupport != null) {
+            val targetTower = world.getTowerById(towerIdToSupport)
+            val currentEnergy = creep.store.getUsedCapacity(RESOURCE_ENERGY.toString()) ?: 0
+
+            if (currentEnergy <= 0) {
+                val supportContainer = chooseEnergyContainerNearTower(creep, targetTower, world)
+                if (supportContainer != null) {
+                    return if (getRange(creep, supportContainer) <= 1) {
+                        Action.Withdraw(supportContainer.id.toString(), RESOURCE_ENERGY)
                     } else {
-                        Action.Move(nearestContainer.toPos())
+                        Action.Move(supportContainer.toPosition())
                     }
                 }
             }
-            val tower = world.getTowerById(targetTowerId)
-            if (tower != null) {
-                return if (getRange(creep, tower) <= 1) {
-                    Action.Transfer(tower.id.toString(), RESOURCE_ENERGY)
+
+            if (targetTower != null && targetTower.needsEnergy()) {
+                return if (getRange(creep, targetTower) <= 1) {
+                    Action.Transfer(targetTower.id.toString(), RESOURCE_ENERGY)
                 } else {
-                    Action.Move(tower.toPos())
+                    Action.Move(targetTower.toPosition())
                 }
             }
         }
 
-        return intent.desiredPos?.let { Action.Move(it) } ?: Action.None
+        return moveToDesiredPosition(intent)
+    }
+
+    private fun chooseEnergyContainerNearTower(
+        workerCreep: Creep,
+        targetTower: StructureTower?,
+        world: WorldModel,
+    ): StructureContainer? {
+        val containersWithEnergy = world.containers.filter { it.hasEnergy() }
+        if (containersWithEnergy.isEmpty()) return null
+
+        val nearbyContainers = if (targetTower != null) {
+            containersWithEnergy.filter { getRange(it, targetTower) <= 8 }
+        } else {
+            emptyList()
+        }
+
+        val candidates = if (nearbyContainers.isNotEmpty()) nearbyContainers else containersWithEnergy
+        return candidates.minByOrNull { getRange(workerCreep, it) }
     }
 }
-
-private fun Structure.toPos(): Pos = Pos(x.toInt(), y.toInt())

@@ -1,6 +1,5 @@
 package bot.arena.mode.capturetheflag.ai.pipeline
 
-import bot.arena.mode.capturetheflag.ai.core.Blackboard
 import bot.arena.mode.capturetheflag.ai.core.GroupOperation
 import bot.arena.mode.capturetheflag.ai.core.GroupStore
 import bot.arena.mode.capturetheflag.ai.core.SquadState
@@ -19,7 +18,7 @@ import bot.arena.mode.capturetheflag.ai.core.WorldModel
 class GroupCoordinator(
     private val groups: GroupStore,
 ) {
-    fun apply(plan: StrategyPlan, world: WorldModel, blackboard: Blackboard): List<SquadView> {
+    fun apply(plan: StrategyPlan, world: WorldModel): List<SquadView> {
         applyOperations(plan.operations)
         applyAssignments(plan.assignments)
 
