@@ -21,6 +21,7 @@
 | [비대칭 능력 활용](./asymmetric-capability.md) | derived | 연속 소모전이 아니라 불연속적 승부 포인트를 찌름 | 란체스터 문서에서 직접 추출 |
 | [타워 안전지대 통제](./tower-zone-control.md) | tactical | 유리한 교전 구역을 우리 타워와 플래그 주변으로 고정 | CTF 특화, 기본 전술 |
 | [강 중앙 BodyPart 통제](./river-bodypart-control.md) | tactical | 중앙 리소스를 먹되 산개는 최소화 | CTF 특화, 스노우볼 전술 |
+| [플래그 우선 타워 템포](./flag-first-tower-tempo.md) | operational | 중립 플래그, 타워 템포, BodyPart, 막판 푸시를 하나의 운영 플랜으로 묶음 | 현재 기본 게임플랜 |
 | [호드 결집과 집중 사격](./horde-cohesion-focus-fire.md) | tactical | 뭉친 채 이동하고 같은 적을 때리며 필요한 만큼만 치유 | 실제 전투 방식 핵심 |
 | [탄력 방어와 역공](./elastic-defense-counterpush.md) | tactical | 적의 안전지대 깊숙한 곳은 피하고, 수비 성공 뒤 역공하거나 시간 압박에 맞춰 찌름 | 장기적으로 가장 안정적 |
 
@@ -29,9 +30,10 @@
 1. [란체스터 법칙](./lanchester-law.md)
 2. [전력 집중](./force-concentration.md)
 3. [각개격파](./defeat-in-detail.md)
-4. [타워 안전지대 통제](./tower-zone-control.md)
-5. [호드 결집과 집중 사격](./horde-cohesion-focus-fire.md)
-6. 나머지 파생/상황 전략
+4. [플래그 우선 타워 템포](./flag-first-tower-tempo.md)
+5. [타워 안전지대 통제](./tower-zone-control.md)
+6. [호드 결집과 집중 사격](./horde-cohesion-focus-fire.md)
+7. 나머지 파생/상황 전략
 
 ## 운영 체크리스트
 

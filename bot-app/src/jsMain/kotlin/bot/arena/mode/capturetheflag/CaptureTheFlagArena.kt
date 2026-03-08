@@ -12,8 +12,6 @@ class CaptureTheFlagArena : Arena {
     }
 
     private fun performOrders(orders: List<Order<*>>) {
-        println("Orders(${orders.size}) :" + orders.joinToString("\n"))
-
         orders.forEach { order ->
             order.perform()
         }
