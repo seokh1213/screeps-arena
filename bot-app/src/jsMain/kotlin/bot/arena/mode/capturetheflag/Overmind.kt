@@ -84,7 +84,7 @@ class Overmind {
         val homeTower = resolveTower(context, homeTowerId) ?: selectHomeTower(context, homeFlag)
         val homeContainer = resolveContainer(context, homeContainerId) ?: selectHomeContainer(context, homeFlag, homeTower)
         val directHomeThreats = selectHomeThreats(context, homeFlag)
-        val incomingHomeThreats = selectIncomingHomeThreats(context, homeFlag)
+        val incomingHomeThreats = selectIncomingHomeThreats(context, homeFlag, enemyHomeFlag)
         val homeThreats = (directHomeThreats + incomingHomeThreats)
             .distinctBy { it.id.toString() }
             .sortedBy { enemy -> homeFlag?.let { enemy.getRangeTo(it) } ?: Int.MAX_VALUE }
@@ -120,9 +120,29 @@ class Overmind {
                     }
                 }
 
-                Role.HEALER -> orderFor(creep) { healerStep(this, context, creepObjective, creepGuard) }
-                Role.RANGER -> orderFor(creep) { rangerStep(this, context, creepObjective, creepGuard) }
-                Role.MELEE, Role.CREEP -> orderFor(creep) { meleeStep(this, context, creepObjective, creepGuard) }
+                Role.HEALER -> {
+                    if (defendHome) {
+                        orderFor(creep) { defendHealerStep(this, context, defenseAnchor, homeThreats) }
+                    } else {
+                        orderFor(creep) { healerStep(this, context, creepObjective, creepGuard) }
+                    }
+                }
+
+                Role.RANGER -> {
+                    if (defendHome) {
+                        orderFor(creep) { defendRangerStep(this, defenseAnchor, homeThreats) }
+                    } else {
+                        orderFor(creep) { rangerStep(this, context, creepObjective, creepGuard) }
+                    }
+                }
+
+                Role.MELEE, Role.CREEP -> {
+                    if (defendHome) {
+                        orderFor(creep) { defendMeleeStep(this, defenseAnchor, homeThreats) }
+                    } else {
+                        orderFor(creep) { meleeStep(this, context, creepObjective, creepGuard) }
+                    }
+                }
             }
         }
 
@@ -291,6 +311,37 @@ class Overmind {
         }
     }
 
+    private fun defendHealerStep(
+        creep: Creep,
+        context: Context,
+        defenseAnchor: HasPosition?,
+        homeThreats: List<Creep>,
+    ) {
+        val localWounded = context.myCreeps
+            .filter { ally -> ally.hits < ally.hitsMax }
+            .filter { ally -> defenseAnchor == null || ally.getRangeTo(defenseAnchor) <= HOME_DEFENSE_RING }
+            .minByOrNull { ally -> ally.hits }
+
+        if (localWounded != null) {
+            if (creep.getRangeTo(localWounded) <= 1) {
+                creep.heal(localWounded)
+            } else if (creep.getRangeTo(localWounded) <= 3) {
+                creep.rangedHeal(localWounded)
+            }
+        }
+
+        if (defenseAnchor != null && creep.getRangeTo(defenseAnchor) > DEFENDER_RETURN_RANGE) {
+            creep.moveTo(defenseAnchor)
+            return
+        }
+
+        val defenseTarget = selectHomeDefenseTarget(creep, defenseAnchor, homeThreats)
+        when {
+            defenseTarget != null && creep.getRangeTo(defenseTarget) > 1 -> creep.moveTo(defenseTarget)
+            defenseAnchor != null && creep.getRangeTo(defenseAnchor) > 1 -> creep.moveTo(defenseAnchor)
+        }
+    }
+
     private fun rangerStep(
         creep: Creep,
         context: Context,
@@ -318,6 +369,32 @@ class Overmind {
         }
     }
 
+    private fun defendRangerStep(
+        creep: Creep,
+        defenseAnchor: HasPosition?,
+        homeThreats: List<Creep>,
+    ) {
+        val inRangeTargets = homeThreats
+            .filter { target -> creep.getRangeTo(target) <= 3 }
+            .sortedWith(compareBy<Creep>({ targetRolePriority(it) }, { it.hits }, { creep.getRangeTo(it) }))
+
+        when {
+            inRangeTargets.size >= 3 -> creep.rangedMassAttack()
+            inRangeTargets.isNotEmpty() -> creep.rangedAttack(inRangeTargets.first())
+        }
+
+        if (defenseAnchor != null && creep.getRangeTo(defenseAnchor) > DEFENDER_RETURN_RANGE) {
+            creep.moveTo(defenseAnchor)
+            return
+        }
+
+        val defenseTarget = selectHomeDefenseTarget(creep, defenseAnchor, homeThreats)
+        when {
+            defenseTarget != null && creep.getRangeTo(defenseTarget) > 2 -> creep.moveTo(defenseTarget)
+            defenseAnchor != null && creep.getRangeTo(defenseAnchor) > 2 -> creep.moveTo(defenseAnchor)
+        }
+    }
+
     private fun meleeStep(
         creep: Creep,
         context: Context,
@@ -341,6 +418,32 @@ class Overmind {
 
         if (movementTarget != null) {
             creep.moveTo(movementTarget)
+        }
+    }
+
+    private fun defendMeleeStep(
+        creep: Creep,
+        defenseAnchor: HasPosition?,
+        homeThreats: List<Creep>,
+    ) {
+        if (defenseAnchor != null && creep.getRangeTo(defenseAnchor) > DEFENDER_RETURN_RANGE) {
+            creep.moveTo(defenseAnchor)
+            return
+        }
+
+        val adjacentEnemy = homeThreats
+            .filter { enemy -> creep.getRangeTo(enemy) <= 1 }
+            .minWithOrNull(compareBy<Creep>({ targetRolePriority(it) }, { it.hits }))
+
+        if (adjacentEnemy != null) {
+            creep.attack(adjacentEnemy)
+            return
+        }
+
+        val defenseTarget = selectHomeDefenseTarget(creep, defenseAnchor, homeThreats)
+        when {
+            defenseTarget != null -> creep.moveTo(defenseTarget)
+            defenseAnchor != null && creep.getRangeTo(defenseAnchor) > 0 -> creep.moveTo(defenseAnchor)
         }
     }
 
@@ -474,6 +577,7 @@ class Overmind {
     private fun selectIncomingHomeThreats(
         context: Context,
         homeFlag: Flag?,
+        enemyHomeFlag: Flag?,
     ): List<Creep> {
         if (homeFlag == null) {
             return emptyList()
@@ -486,9 +590,12 @@ class Overmind {
                 val previous = previousEnemiesById[enemy.id.toString()] ?: return@filter false
                 val currentRange = enemy.getRangeTo(homeFlag)
                 val previousRange = previous.getRangeTo(homeFlag)
+                val enemyHomeRange = enemyHomeFlag?.let { enemy.getRangeTo(it) } ?: Int.MAX_VALUE
+                val approachingHome = previousRange - currentRange >= HOME_APPROACH_DELTA
+                val alreadyOnOurSide = currentRange + HOME_SIDE_MARGIN <= enemyHomeRange
 
                 currentRange in (HOME_THREAT_RANGE + 1)..EARLY_HOME_THREAT_RANGE &&
-                    previousRange - currentRange >= HOME_APPROACH_DELTA
+                    (approachingHome || alreadyOnOurSide)
             }
             .sortedBy { enemy -> enemy.getRangeTo(homeFlag) }
     }
@@ -504,12 +611,12 @@ class Overmind {
         }
 
         val combatCreeps = context.myCreeps.filter { roleOf(it) != Role.WORKER }
+        val totalThreats = (directHomeThreats + incomingHomeThreats).distinctBy { it.id.toString() }.size
         val desiredDefenders = when {
-            directHomeThreats.size >= 4 -> 5
-            directHomeThreats.size == 3 -> 4
-            directHomeThreats.size == 2 -> 3
-            directHomeThreats.size == 1 -> 2
-            incomingHomeThreats.size >= 3 -> 3
+            totalThreats >= 5 -> 6
+            totalThreats == 4 -> 5
+            totalThreats == 3 -> 4
+            totalThreats == 2 -> 3
             else -> 2
         }.coerceAtMost(combatCreeps.size)
 
@@ -540,6 +647,22 @@ class Overmind {
         }
 
         return selected.map { creep -> creep.id.toString() }.toSet()
+    }
+
+    private fun selectHomeDefenseTarget(
+        creep: Creep,
+        defenseAnchor: HasPosition?,
+        homeThreats: List<Creep>,
+    ): Creep? {
+        return homeThreats
+            .filter { enemy -> defenseAnchor == null || enemy.getRangeTo(defenseAnchor) <= HOME_INTERCEPT_RANGE }
+            .minWithOrNull(
+                compareBy<Creep>(
+                    { enemy -> targetRolePriority(enemy) },
+                    { enemy -> enemy.hits },
+                    { enemy -> creep.getRangeTo(enemy) },
+                )
+            )
     }
 
     private fun selectHomeWorkerId(
@@ -834,9 +957,13 @@ class Overmind {
     companion object {
         private val ENERGY_KEY = RESOURCE_ENERGY.unsafeCast<String?>()
         private const val HOME_THREAT_RANGE = 12
-        private const val EARLY_HOME_THREAT_RANGE = 18
+        private const val EARLY_HOME_THREAT_RANGE = 28
         private const val HOME_APPROACH_DELTA = 1
+        private const val HOME_SIDE_MARGIN = 4
         private const val HOME_CAPTURE_RANGE = 2
+        private const val HOME_DEFENSE_RING = 8
+        private const val HOME_INTERCEPT_RANGE = 10
+        private const val DEFENDER_RETURN_RANGE = 8
         private const val ENEMY_HOME_DEFENSE_RANGE = 6
         private const val TOWER_ACTION_RANGE = 20
     }
