@@ -11,6 +11,20 @@ import screeps.bindings.arena.game.FindPathOptions
 import screeps.bindings.arena.game.Prototype
 import screeps.bindings.arena.game.Store
 
+typealias CreepAttackResult = ScreepsReturnCode
+typealias CreepBuildResult = ScreepsReturnCode
+typealias CreepDropResult = ScreepsReturnCode
+typealias CreepHarvestResult = ScreepsReturnCode
+typealias CreepHealResult = ScreepsReturnCode
+typealias CreepMoveResult = ScreepsReturnCode
+typealias CreepPickupResult = ScreepsReturnCode
+typealias CreepPullResult = ScreepsReturnCode
+typealias CreepRangedAttackResult = ScreepsReturnCode
+typealias CreepRangedHealResult = ScreepsReturnCode
+typealias CreepRangedMassAttackResult = ScreepsReturnCode
+typealias CreepTransferResult = ScreepsReturnCode
+typealias CreepWithdrawResult = ScreepsReturnCode
+
 abstract external class Creep : GameObject {
     val body: Array<BodyPart>
     val fatigue: Int
@@ -20,24 +34,24 @@ abstract external class Creep : GameObject {
     val store: Store
     val spawning: Boolean
 
-    fun attack(target: Creep): ScreepsReturnCode
-    fun attack(target: Structure): ScreepsReturnCode
-    fun attack(target: ConstructionSite): ScreepsReturnCode
-    fun build(target: ConstructionSite): ScreepsReturnCode
-    fun drop(resource: ResourceConstant, amount: Int = definedExternally): ScreepsReturnCode
-    fun harvest(target: Source): ScreepsReturnCode
-    fun heal(target: Creep): ScreepsReturnCode
-    fun move(direction: DirectionConstant): ScreepsReturnCode
-    fun moveTo(target: HasPosition, options: FindPathOptions = definedExternally): ScreepsReturnCode
-    fun pickup(target: Resource): ScreepsReturnCode
-    fun pull(target: Creep): ScreepsReturnCode
-    fun rangedAttack(target: Creep): ScreepsReturnCode
-    fun rangedAttack(target: Structure): ScreepsReturnCode
-    fun rangedHeal(target: Creep): ScreepsReturnCode
-    fun rangedMassAttack(): ScreepsReturnCode
-    fun transfer(target: Structure, resource: ResourceConstant, amount: Int = definedExternally): ScreepsReturnCode
-    fun transfer(target: Creep, resource: ResourceConstant, amount: Int = definedExternally): ScreepsReturnCode
-    fun withdraw(target: Structure, resource: ResourceConstant, amount: Int = definedExternally): ScreepsReturnCode
+    fun attack(target: Creep): CreepAttackResult
+    fun attack(target: Structure): CreepAttackResult
+    fun attack(target: ConstructionSite): CreepAttackResult
+    fun build(target: ConstructionSite): CreepBuildResult
+    fun drop(resource: ResourceConstant, amount: Int = definedExternally): CreepDropResult
+    fun harvest(target: Source): CreepHarvestResult
+    fun heal(target: Creep): CreepHealResult
+    fun move(direction: DirectionConstant): CreepMoveResult
+    fun moveTo(target: HasPosition, options: FindPathOptions = definedExternally): CreepMoveResult
+    fun pickup(target: Resource): CreepPickupResult
+    fun pull(target: Creep): CreepPullResult
+    fun rangedAttack(target: Creep): CreepRangedAttackResult
+    fun rangedAttack(target: Structure): CreepRangedAttackResult
+    fun rangedHeal(target: Creep): CreepRangedHealResult
+    fun rangedMassAttack(): CreepRangedMassAttackResult
+    fun transfer(target: Structure, resource: ResourceConstant, amount: Int = definedExternally): CreepTransferResult
+    fun transfer(target: Creep, resource: ResourceConstant, amount: Int = definedExternally): CreepTransferResult
+    fun withdraw(target: Structure, resource: ResourceConstant, amount: Int = definedExternally): CreepWithdrawResult
 
     companion object : Prototype<Creep>
 }

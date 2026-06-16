@@ -7,4 +7,3 @@ external interface Store {
     fun getUsedCapacity(resource: String? = definedExternally): Int?
     fun getFreeCapacity(resource: String? = definedExternally): Int?
 }
-

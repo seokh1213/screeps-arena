@@ -12,7 +12,7 @@ import screeps.bindings.arena.HasPosition
 import screeps.bindings.arena.Structure
 
 external fun <T> getObjectsByPrototype(prototype: Prototype<T>): Array<T>
-external fun getHeapStatistics(): HeapStatistics
+external fun getHeapStatistics(): HeapInfo
 external fun getCpuTime(): Long
 external fun getDirection(dx: Int, dy: Int): DirectionConstant
 external fun getObjects(): Array<GameObject>
@@ -44,6 +44,7 @@ external interface Prototype<T>
 typealias Direction = DirectionConstant
 typealias Terrain = Int
 typealias DoesZapCodeSpaceFlag = Int
+typealias HeapInfo = HeapStatistics
 
 external interface HeapStatistics {
     @JsName("total_heap_size")

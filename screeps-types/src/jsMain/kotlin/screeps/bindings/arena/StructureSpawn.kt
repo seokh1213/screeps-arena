@@ -9,12 +9,14 @@ import screeps.bindings.ScreepsReturnCode
 import screeps.bindings.arena.game.Prototype
 import screeps.bindings.arena.game.Store
 
+typealias SetDirectionsResult = ScreepsReturnCode
+
 abstract external class StructureSpawn : OwnedStructure {
     val store: Store
     val spawning: Spawning?
     val directions: Array<DirectionConstant>
 
-    fun setDirections(directions: Array<DirectionConstant>): ScreepsReturnCode
+    fun setDirections(directions: Array<DirectionConstant>): SetDirectionsResult
     fun spawnCreep(body: Array<out BodyPartConstant>): SpawnCreepResult
 
     companion object : Prototype<StructureSpawn>

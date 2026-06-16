@@ -1,6 +1,8 @@
 package screeps.bindings.arena
 
-external interface HasPosition {
+import screeps.bindings.arena.game.Goal
+
+external interface HasPosition : Goal {
     var x: Double
     var y: Double
 }

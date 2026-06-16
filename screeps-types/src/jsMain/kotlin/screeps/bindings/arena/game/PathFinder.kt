@@ -5,10 +5,10 @@ package screeps.bindings.arena.game
 import screeps.bindings.Options
 import screeps.bindings.arena.HasPosition
 
-external fun searchPath(origin: HasPosition, goal: HasPosition, options: SearchPathOptions = definedExternally): SearchPathResult
-external fun searchPath(origin: HasPosition, goal: GoalWithRange, options: SearchPathOptions = definedExternally): SearchPathResult
-external fun searchPath(origin: HasPosition, goal: Array<out HasPosition>, options: SearchPathOptions = definedExternally): SearchPathResult
-external fun searchPath(origin: HasPosition, goal: Array<out GoalWithRange>, options: SearchPathOptions = definedExternally): SearchPathResult
+external interface Goal
+
+external fun searchPath(origin: HasPosition, goal: Goal, options: SearchPathOptions = definedExternally): SearchPathResult
+external fun searchPath(origin: HasPosition, goal: Array<out Goal>, options: SearchPathOptions = definedExternally): SearchPathResult
 
 external class CostMatrix {
     fun get(x: Int, y: Int): Int
@@ -33,7 +33,7 @@ external interface SearchPathResult {
     val incomplete: Boolean
 }
 
-external interface GoalWithRange {
+external interface GoalWithRange : Goal {
     val pos: HasPosition
     val range: Int
 }
