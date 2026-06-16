@@ -26,8 +26,8 @@ class NaiveWorkerBehaviorStrategy(
 
     override fun behave() {
         val myWorkers = getObjectsByPrototype(Creep)
-            .filter { it.my && !it.spawning && creepMemory.get(it) == CreepRoles.WORKER }
-        val sources = getObjectsByPrototype(Source)
+            .filter { it.my && !it.spawning && creepMemory[it] == CreepRoles.WORKER }
+        val sources = getObjectsByPrototype(Source).toList()
 
         myWorkers.forEach { creep ->
             val role = workerRoles.getOrPut(creep.id.toString()) { WorkerRole.HARVESTING }
@@ -38,7 +38,7 @@ class NaiveWorkerBehaviorStrategy(
         }
     }
 
-    private fun harvest(creep: Creep, sources: Array<Source>) {
+    private fun harvest(creep: Creep, sources: List<Source>) {
         if ((creep.store.getFreeCapacity(RESOURCE_ENERGY.unsafeCast<String?>()) ?: 0) == 0) {
             workerRoles[creep.id.toString()] = WorkerRole.DELIVERING
             deliver(creep)
