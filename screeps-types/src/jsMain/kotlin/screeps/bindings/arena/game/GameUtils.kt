@@ -4,6 +4,7 @@
 package screeps.bindings.arena.game
 
 import screeps.bindings.DirectionConstant
+import screeps.bindings.Options
 import screeps.bindings.ScreepsReturnCode
 import screeps.bindings.arena.ConstructionSite
 import screeps.bindings.arena.GameObject
@@ -40,30 +41,38 @@ external fun <T : Structure> createConstructionSite(
 
 external interface Prototype<T>
 
+typealias Direction = DirectionConstant
+typealias Terrain = Int
+typealias DoesZapCodeSpaceFlag = Int
+
 external interface HeapStatistics {
+    @JsName("total_heap_size")
+    val totalHeapSize: Long
+    @JsName("total_heap_size_executable")
+    val totalHeapSizeExecutable: Long
+    @JsName("total_physical_size")
+    val totalPhysicalSize: Long
+    @JsName("total_available_size")
+    val totalAvailableSize: Long
+    @JsName("used_heap_size")
+    val usedHeapSize: Long
+    @JsName("heap_size_limit")
+    val heapSizeLimit: Long
+    @JsName("malloced_memory")
+    val mallocedMemory: Long
+    @JsName("peak_malloced_memory")
+    val peakMallocedMemory: Long
+    @JsName("does_zap_garbage")
+    val doesZapGarbage: DoesZapCodeSpaceFlag
+    @JsName("number_of_native_contexts")
+    val numberOfNativeContexts: Int
+    @JsName("number_of_detached_contexts")
+    val numberOfDetachedContexts: Int
     @JsName("externally_allocated_size")
     val externallyAllocatedSize: Long
-    val totalHeapSize: Long
-    val totalHeapSizeExecutable: Long
-    val totalPhysicalSize: Long
-    val totalAvailableSize: Long
-    val usedHeapSize: Long
-    val heapSizeLimit: Long
-    val mallocedMemory: Long
-    val peakMallocedMemory: Long
-    val doesZapGarbage: Int
-    val numberOfNativeContexts: Int
-    val numberOfDetachedContexts: Int
 }
 
-external interface FindPathOptions {
-    var costMatrix: CostMatrix?
-    var plainCost: Int?
-    var swampCost: Int?
-    var flee: Boolean?
-    var maxOps: Int?
-    var maxCost: Int?
-    var heuristicWeight: Double?
+external interface FindPathOptions : SearchPathOptions {
     var ignore: Array<GameObject>?
 }
 

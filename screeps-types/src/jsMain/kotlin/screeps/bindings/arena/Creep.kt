@@ -42,8 +42,9 @@ abstract external class Creep : GameObject {
     companion object : Prototype<Creep>
 }
 
+typealias BodyPartType = BodyPartConstant
+
 external interface BodyPart {
     val type: BodyPartConstant
     val hits: Int
 }
-

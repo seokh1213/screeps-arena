@@ -1,6 +1,14 @@
+@file:JsModule("game/visual")
+@file:JsNonModule
+
 package screeps.bindings.arena.game
 
+import screeps.bindings.Options
 import screeps.bindings.arena.HasPosition
+
+typealias Color = String
+typealias LineStyle = String
+typealias TextAlign = String
 
 external class Visual(layer: Int = definedExternally, persistent: Boolean = definedExternally) {
     val layer: Int
@@ -15,45 +23,45 @@ external class Visual(layer: Int = definedExternally, persistent: Boolean = defi
     fun size(): Int
 }
 
-external interface CircleVisualStyle {
+external interface CircleVisualStyle : Options {
     var radius: Double?
-    var fill: String?
+    var fill: Color?
     var opacity: Double?
-    var stroke: String?
+    var stroke: Color?
     var strokeWidth: Double?
-    var lineStyle: String? // "dashed" | "dotted" | undefined
+    var lineStyle: LineStyle?
 }
 
-external interface LineVisualStyle {
+external interface LineVisualStyle : Options {
     var width: Double?
-    var color: String?
+    var color: Color?
     var opacity: Double?
-    var lineStyle: String? // "dashed" | "dotted" | undefined
+    var lineStyle: LineStyle?
 }
 
-external interface PolyVisualStyle {
-    var fill: String?
+external interface PolyVisualStyle : Options {
+    var fill: Color?
     var opacity: Double?
-    var stroke: String?
+    var stroke: Color?
     var strokeWidth: Double?
-    var lineStyle: String? // "dashed" | "dotted" | undefined
+    var lineStyle: LineStyle?
 }
 
-external interface RectVisualStyle {
-    var fill: String?
+external interface RectVisualStyle : Options {
+    var fill: Color?
     var opacity: Double?
-    var stroke: String?
+    var stroke: Color?
     var strokeWidth: Double?
-    var lineStyle: String? // "dashed" | "dotted" | undefined
+    var lineStyle: LineStyle?
 }
 
-external interface TextVisualStyle {
-    var align: String? // "center" | "left" | "right"
-    var backgroundColor: String?
+external interface TextVisualStyle : Options {
+    var align: TextAlign?
+    var backgroundColor: Color?
     var backgroundPadding: Double?
-    var color: String?
-    var font: dynamic // number | string
+    var color: Color?
+    var font: dynamic
     var opacity: Double?
-    var stroke: String?
+    var stroke: Color?
     var strokeWidth: Double?
 }

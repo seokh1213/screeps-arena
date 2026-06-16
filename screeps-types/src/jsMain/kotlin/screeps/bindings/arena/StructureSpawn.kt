@@ -21,7 +21,7 @@ abstract external class StructureSpawn : OwnedStructure {
 }
 
 external interface SpawnCreepResult {
-    val `object`: Any?
+    val `object`: Creep?
     val error: ScreepsReturnCode?
 }
 

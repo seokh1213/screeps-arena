@@ -1,4 +1,4 @@
-@file:JsModule("game/prototypes")
+@file:JsModule("game/prototypes/game-object")
 @file:JsNonModule
 
 package screeps.bindings.arena

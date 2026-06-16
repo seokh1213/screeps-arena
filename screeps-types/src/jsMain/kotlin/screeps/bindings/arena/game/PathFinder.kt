@@ -2,10 +2,13 @@
 @file:JsNonModule
 package screeps.bindings.arena.game
 
+import screeps.bindings.Options
 import screeps.bindings.arena.HasPosition
 
-external fun searchPath(origin: HasPosition, goal: dynamic, options: SearchPathOptions = definedExternally): SearchPathResult
-external fun searchPath(origin: HasPosition, goal: Array<dynamic>, options: SearchPathOptions = definedExternally): SearchPathResult
+external fun searchPath(origin: HasPosition, goal: HasPosition, options: SearchPathOptions = definedExternally): SearchPathResult
+external fun searchPath(origin: HasPosition, goal: GoalWithRange, options: SearchPathOptions = definedExternally): SearchPathResult
+external fun searchPath(origin: HasPosition, goal: Array<out HasPosition>, options: SearchPathOptions = definedExternally): SearchPathResult
+external fun searchPath(origin: HasPosition, goal: Array<out GoalWithRange>, options: SearchPathOptions = definedExternally): SearchPathResult
 
 external class CostMatrix {
     fun get(x: Int, y: Int): Int
@@ -13,7 +16,7 @@ external class CostMatrix {
     fun clone(): CostMatrix
 }
 
-external interface SearchPathOptions {
+external interface SearchPathOptions : Options {
     var costMatrix: CostMatrix?
     var plainCost: Int?
     var swampCost: Int?
@@ -34,4 +37,3 @@ external interface GoalWithRange {
     val pos: HasPosition
     val range: Int
 }
-
